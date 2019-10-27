@@ -57,7 +57,7 @@ public class InvestorAdapter extends RecyclerView.Adapter<InvestorAdapter.Invest
     public InvestorViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Get the RecyclerView item layout
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        View view = inflater.inflate(R.layout.creator, parent, false);
+        View view = inflater.inflate(R.layout.investor, parent, false);
         Log.d(TAG, "ViewHolder Number: " + viewHolderCount);
         viewHolderCount++;
         return new InvestorViewHolder(view);
@@ -72,10 +72,11 @@ public class InvestorAdapter extends RecyclerView.Adapter<InvestorAdapter.Invest
         Investor individual = mInvestors.get(position);
 
         Log.d(TAG, "#" + position);
-        holder.name.setText(individual.getVideoName());
-        holder.percent.setText((String) String.valueOf(individual.getPercent()));
-        
-        holder.location.setText(individual.getCountry());
+        Log.d(TAG, "Video name: " + individual.getVideoName());
+        holder.nameV.setText((String) individual.getVideoName());
+        holder.percentV.setText(("Percentage: " + individual.getPercent() + "%"));
+        holder.valueV.setText(("Value: $" + individual.getValue()));
+        holder.fullV.setText(("Market Capitalization: $" + (Double.valueOf(individual.getValue()) / (Double.valueOf(individual.getPercent())/100))));
     }
 
 
@@ -99,19 +100,19 @@ public class InvestorAdapter extends RecyclerView.Adapter<InvestorAdapter.Invest
     //Inner class to hold the views needed to display a single item in the recycler view
     class InvestorViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        TextView name;
-        TextView percent;
-        TextView value;
-        TextView full;
+        TextView nameV;
+        TextView percentV;
+        TextView valueV;
+        TextView fullV;
 
         //Constructor for viewholder
         public InvestorViewHolder(View itemView) {
             super(itemView);
 
-            name = (TextView) itemView.findViewById(R.id.video_name);
-            percent = (TextView) itemView.findViewById(R.id.video_percent);
-            value = (TextView) itemView.findViewById(R.id.video_value);
-            full = (TextView) itemView.findViewById(R.id.video_full);
+            nameV = (TextView) itemView.findViewById(R.id.video_name);
+            percentV = (TextView) itemView.findViewById(R.id.video_percent);
+            valueV = (TextView) itemView.findViewById(R.id.video_value);
+            fullV = (TextView) itemView.findViewById(R.id.video_full);
             itemView.setOnClickListener(this);
         }
 
@@ -120,35 +121,10 @@ public class InvestorAdapter extends RecyclerView.Adapter<InvestorAdapter.Invest
         @Override
         public void onClick(View view) {
             int clickedPosition = getAdapterPosition();
-            String clicked = mInvestors.get(clickedPosition).getKey();
+            String clicked = mInvestors.get(clickedPosition).getUserId();
 
             mOnClickListener.onListItemClick(clicked);
         }
 
-    }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
-        }
     }
 }

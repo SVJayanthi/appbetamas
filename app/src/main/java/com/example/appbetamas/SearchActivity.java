@@ -13,12 +13,16 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,7 +30,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,7 +48,7 @@ import java.util.Date;
 
 import static android.content.ContentValues.TAG;
 
-public class CreatorActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity {
 
     private FirebaseDatabase mDatabase;
     private FirebaseAuth auth;
@@ -58,6 +65,10 @@ public class CreatorActivity extends AppCompatActivity {
     private TextView linksC;
     private TextView valueC;
 
+    private String query;
+    private String key;
+    private double valueD;
+
     private EditText percentC;
     private Button sendC;
     @Override
@@ -72,6 +83,8 @@ public class CreatorActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
+        query = intent.getStringExtra("query");
+
         imageC = findViewById(R.id.c_image);
         titleC = findViewById(R.id.c_title);
         countryC = findViewById(R.id.c_country);
@@ -84,20 +97,6 @@ public class CreatorActivity extends AppCompatActivity {
         linksC = findViewById(R.id.c_links);
         valueC = findViewById(R.id.c_value);
 
-
-        new DownloadImageTask((ImageView) imageC)
-                .execute(intent.getStringExtra("url"));
-        titleC.setText(intent.getStringExtra("title"));
-        countryC.setText(("Country: " + intent.getStringExtra("country")));
-        publishC.setText(("Created: " + intent.getStringExtra("publish")));
-        subscribersC.setText(("Subscribers: " + intent.getStringExtra("subscribers")));
-        videoC.setText(("Video Count: " + intent.getStringExtra("video")));
-        viewsC.setText(intent.getStringExtra("views"));
-        urlC.setText(intent.getStringExtra("v_url"));
-        descriptionC.setText(intent.getStringExtra("description"));
-        linksC.setText(intent.getStringExtra("links"));
-        final double valueD = Double.parseDouble(intent.getStringExtra("subscribers")) / 12;
-        valueC.setText(("Value " + String.valueOf(valueD / 12)));
 
         percentC = findViewById(R.id.c_percent);
         sendC = findViewById(R.id.c_send);
@@ -133,10 +132,10 @@ public class CreatorActivity extends AppCompatActivity {
                     }
                     Log.d(TAG, "Results: " + result);
 
-                    Toast.makeText(CreatorActivity.this, "Offer Submitted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SearchActivity.this, "Offer Submitted", Toast.LENGTH_SHORT).show();
 
                 } else {
-                    Toast.makeText(CreatorActivity.this, "Invalid Submission", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SearchActivity.this, "Invalid Submission", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -148,6 +147,16 @@ public class CreatorActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Log.d(TAG, "Open Search");
+
+        new RetrieveFeedTask().execute();
+    }
+
 
     private static String purchaseStock(URL url, String merchant_id, int amount, String description ) throws IOException {
         try {
@@ -191,6 +200,161 @@ public class CreatorActivity extends AppCompatActivity {
             return e.getMessage();
         }
 
+    }
+    private void setAdapter() {
+        Log.d(TAG, "Accessing Database");
+        mDatabase.getReference().child("channels").addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                        Log.d(TAG, "onChildAddedR:" + dataSnapshot.getKey());
+
+                        if (key.equals(dataSnapshot.getKey())) {
+                            Creator individual = dataSnapshot.getValue(Creator.class);
+                            new DownloadImageTask((ImageView) imageC)
+                                    .execute((String) individual.getThumbnails().get("high").get("url"));
+                            titleC.setText(individual.getTitle());
+                            countryC.setText(("Country: " + individual.getCountry()));
+                            publishC.setText(("Created: " + individual.getPublishedAt()));
+                            subscribersC.setText(("Subscribers: " + individual.getStatistics().get("subscriberCount")));
+                            videoC.setText(("Video Count: " + individual.getStatistics().get("videoCount")));
+                            //viewsC.setText(("View Count: " +individual.getStatistics().get("viewCount")));
+                            //urlC.setText(individual.getCustomUrl());
+                            descriptionC.setText(individual.getDescription());
+                            linksC.setText(individual.getVideoLinks().get(0));
+                            valueD = Double.parseDouble((String) individual.getStatistics().get("subscriberCount")) / 12;
+                            valueC.setText(("Value " + String.valueOf(valueD / 12)));
+                            return;
+                        }
+                    }
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if(keyCode == KeyEvent.KEYCODE_BACK)
+        {
+            Intent intent = new Intent(SearchActivity.this, MainActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return false;
+    }
+
+
+
+    class RetrieveFeedTask extends AsyncTask<Void, Void, String> {
+
+        private Exception exception;
+
+        protected void onPreExecute() {
+            Log.d(TAG, "Pre Execute Search");
+        }
+
+        protected String doInBackground(Void... urls) {
+            try {
+                URL url = new URL("https://core-result-256922.appspot.com/search/" + query);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+
+
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String response) {
+            if(response == null) {
+                response = "THERE WAS AN ERROR";
+            }
+            Log.i("INFO", response);
+            try {
+                JSONArray object = (JSONArray) new JSONTokener(response).nextValue();
+                String first_line = object.getString(0);
+                key = first_line.substring(7, 31);
+                Log.i("Key", key);
+                new RetrieveAddTask().execute();
+                setAdapter();
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class RetrieveAddTask extends AsyncTask<Void, Void, String> {
+
+        private Exception exception;
+
+        protected void onPreExecute() {
+        }
+
+        protected String doInBackground(Void... urls) {
+            try {
+                URL url = new URL("https://core-result-256922.appspot.com/id/" + query);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+
+
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String response) {
+            if(response == null) {
+                response = "THERE WAS AN ERROR";
+            }
+        }
     }
 
 

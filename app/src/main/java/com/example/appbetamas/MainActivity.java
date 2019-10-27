@@ -21,6 +21,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,6 +38,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Menu;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
     private CreatorAdapter adapterTopCreators;
     private RecyclerView recyclerViewTopCreators;
 
+    private SearchView searchView;
     private ImageView imageUser;
     private TextView nameUser;
     private TextView emailUser;
@@ -70,6 +73,23 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        searchView = findViewById(R.id.search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                intent.putExtra("query", searchView.getQuery().toString());
+                searchView.clearFocus();
+                startActivity(intent);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id)).requestEmail().requestScopes(new Scope("https://www.googleapis.com/auth/youtubepartner"), new Scope("https://www.googleapis.com/auth/yt-analytics-monetary.readonly"))
@@ -83,6 +103,15 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
                 FirebaseAuth.getInstance().signOut();
 
                 signOut();
+            }
+        });
+
+        FloatingActionButton fab_invest = findViewById(R.id.invest_fab);
+        fab_invest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, InvestorActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -115,6 +144,11 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
                 R.id.nav_tools, R.id.nav_share, R.id.nav_send)
                 .setDrawerLayout(drawer)
                 .build();
+
+        View header = navigationView.getHeaderView(0);
+        imageUser = (ImageView) header.findViewById(R.id.imageView);
+        nameUser = (TextView) header.findViewById(R.id.name_text);
+        emailUser = (TextView) header.findViewById(R.id.email_text);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
@@ -135,6 +169,10 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
     public void onStart() {
         super.onStart();
 
+        FirebaseUser user = mAuth.getCurrentUser();
+        nameUser.setText(user.getDisplayName());
+        emailUser.setText(user.getEmail());
+
         setAdapter();
         Log.d(TAG, "Start Complete");
 
@@ -146,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
         Log.d(TAG, "Top Creator");
 
         creators.clear();
-        databaseReference.orderByChild("statistics/subscriberCount").limitToFirst(10).
+        databaseReference.orderByChild("statistics/subscriberCount").
                 addChildEventListener(new ChildEventListener() {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -157,11 +195,12 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
 
                         creators.add(individual);
 
-                        if (creators.size() > 8) {
-                            Log.d(TAG, "callingAdapter:" + dataSnapshot.getKey());
-                            setTopAdapter();
-                            return;
-                        }
+                        setTopAdapter();
+                        //if (creators.size() > 8) {
+                        //    Log.d(TAG, "callingAdapter:" + dataSnapshot.getKey());
+                        //    setTopAdapter();
+                        //    return;
+                        //}
                     }
 
                     @Override

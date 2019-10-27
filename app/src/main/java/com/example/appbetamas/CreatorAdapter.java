@@ -115,9 +115,9 @@ public class CreatorAdapter extends RecyclerView.Adapter<CreatorAdapter.CreatorV
             super(itemView);
 
             image = (ImageView) itemView.findViewById(R.id.creator_image);
-            name = (TextView) itemView.findViewById(R.id.video_name);
-            subscriber = (TextView) itemView.findViewById(R.id.video_percent);
-            location = (TextView) itemView.findViewById(R.id.video_value);
+            name = (TextView) itemView.findViewById(R.id.creator_name);
+            subscriber = (TextView) itemView.findViewById(R.id.creator_subscribers);
+            location = (TextView) itemView.findViewById(R.id.creator_location);
             itemView.setOnClickListener(this);
         }
 
