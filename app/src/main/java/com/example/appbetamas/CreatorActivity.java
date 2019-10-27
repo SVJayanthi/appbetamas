@@ -123,9 +123,11 @@ public class CreatorActivity extends AppCompatActivity {
                     } catch (Exception e) {
                         Log.e(TAG, "Exception: " + e.getMessage());
                     }
-                    int amount = 1234;
+
+
+                    int amount =  (int) ((valueD / 12)*(percent/100));
                     String description = "12 percent equity";
-                    String result = "";
+                    String result = "asdf";
                     try {
                         result = purchaseStock(url, merchant_id, amount, description);
                     } catch (Exception e) {
@@ -171,10 +173,12 @@ public class CreatorActivity extends AppCompatActivity {
             purchase.put("status", "pending");
             purchase.put("description", description);
 
+
             OutputStreamWriter outputStream = new OutputStreamWriter(con.getOutputStream());
             outputStream.write(purchase.toString());
             outputStream.flush();
 
+            Log.d(TAG, "Con: " + con.getInputStream().toString());
 
             StringBuilder stringBuilder = new StringBuilder();
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));

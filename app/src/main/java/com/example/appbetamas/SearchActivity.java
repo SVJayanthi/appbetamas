@@ -326,7 +326,7 @@ public class SearchActivity extends AppCompatActivity {
 
         protected String doInBackground(Void... urls) {
             try {
-                URL url = new URL("https://core-result-256922.appspot.com/id/" + query);
+                URL url = new URL("https://core-result-256922.appspot.com/id/" + key);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
