@@ -9,7 +9,7 @@ import java.util.Map;
  * Created by Sravan on 1/17/2018.
  */
 
-public class Creator implements Serializable{
+public class Creator{
     public String key;
 
     public String getTitle() {

@@ -12,13 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".InvestorActivity"
+            android:label="@string/title_activity_investor"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
             android:name=".CreatorActivity"
             android:label="@string/title_activity_creator"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".LoginActivity"
             android:label="appbetamas">

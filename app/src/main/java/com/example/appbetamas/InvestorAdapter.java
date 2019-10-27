@@ -24,7 +24,7 @@ import java.util.List;
  */
 
 //Builds all recycler views to display books and queries for the data from Firebase server
-public class CreatorAdapter extends RecyclerView.Adapter<CreatorAdapter.CreatorViewHolder> {
+public class InvestorAdapter extends RecyclerView.Adapter<InvestorAdapter.InvestorViewHolder> {
 
     //Instantiate objects
     private Context mContext;
@@ -35,51 +35,46 @@ public class CreatorAdapter extends RecyclerView.Adapter<CreatorAdapter.CreatorV
 
 
     final private ListItemClickListener mOnClickListener;
-    private final static String TAG = CreatorAdapter.class.getSimpleName();
+    private final static String TAG = InvestorAdapter.class.getSimpleName();
 
     //Listen for when an item is clicked
     public interface ListItemClickListener {
         void onListItemClick(String clickedBook);
     }
 
-    private List<Creator> mCreators;
+    private List<Investor> mInvestors;
 
     //Sends query for list of books to the server and recieves book data
-    public CreatorAdapter(Context context, ListItemClickListener listener, List<Creator> creatorsList) {
+    public InvestorAdapter(Context context, ListItemClickListener listener, List<Investor> creatorsList) {
         this.mContext = context;
         this.mOnClickListener = listener;
-        this.mCreators = creatorsList;
+        this.mInvestors = creatorsList;
         this.mCount = creatorsList.size();
     }
 
     //Sets up view holder inflater to display all the books
     @Override
-    public CreatorViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public InvestorViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Get the RecyclerView item layout
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View view = inflater.inflate(R.layout.creator, parent, false);
         Log.d(TAG, "ViewHolder Number: " + viewHolderCount);
         viewHolderCount++;
-        return new CreatorViewHolder(view);
+        return new InvestorViewHolder(view);
     }
 
     //Creates the view holder for each of the books queried
     @Override
-    public void onBindViewHolder(CreatorViewHolder holder, int position) {
-        if (mCreators.get(position)==null) {
+    public void onBindViewHolder(InvestorViewHolder holder, int position) {
+        if (mInvestors.get(position)==null) {
             return; // bail if returned null
         }
-        Creator individual = mCreators.get(position);
+        Investor individual = mInvestors.get(position);
 
         Log.d(TAG, "#" + position);
-        new DownloadImageTask((ImageView) holder.image)
-                .execute((String) individual.getThumbnails().get("default").get("url"));
-        //holder.image.setImageDrawable(LoadImageFromWebOperations((String) individual.getThumbnails().get("default").get("url")));
-        holder.name.setText(individual.getTitle());
-        holder.subscriber.setText((String) individual.getStatistics().get("subscriberCount"));
-        if (individual.getCountry() == null) {
-            individual.setCountry("N/A");
-        }
+        holder.name.setText(individual.getVideoName());
+        holder.percent.setText((String) String.valueOf(individual.getPercent()));
+        
         holder.location.setText(individual.getCountry());
     }
 
@@ -102,22 +97,21 @@ public class CreatorAdapter extends RecyclerView.Adapter<CreatorAdapter.CreatorV
 
 
     //Inner class to hold the views needed to display a single item in the recycler view
-    class CreatorViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class InvestorViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-
-        ImageView image;
         TextView name;
-        TextView subscriber;
-        TextView location;
+        TextView percent;
+        TextView value;
+        TextView full;
 
         //Constructor for viewholder
-        public CreatorViewHolder(View itemView) {
+        public InvestorViewHolder(View itemView) {
             super(itemView);
 
-            image = (ImageView) itemView.findViewById(R.id.creator_image);
             name = (TextView) itemView.findViewById(R.id.video_name);
-            subscriber = (TextView) itemView.findViewById(R.id.video_percent);
-            location = (TextView) itemView.findViewById(R.id.video_value);
+            percent = (TextView) itemView.findViewById(R.id.video_percent);
+            value = (TextView) itemView.findViewById(R.id.video_value);
+            full = (TextView) itemView.findViewById(R.id.video_full);
             itemView.setOnClickListener(this);
         }
 
@@ -126,7 +120,7 @@ public class CreatorAdapter extends RecyclerView.Adapter<CreatorAdapter.CreatorV
         @Override
         public void onClick(View view) {
             int clickedPosition = getAdapterPosition();
-            String clicked = mCreators.get(clickedPosition).getKey();
+            String clicked = mInvestors.get(clickedPosition).getKey();
 
             mOnClickListener.onListItemClick(clicked);
         }
@@ -144,7 +138,7 @@ public class CreatorAdapter extends RecyclerView.Adapter<CreatorAdapter.CreatorV
             String urldisplay = urls[0];
             Bitmap mIcon11 = null;
             try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
+                InputStream in = new URL(urldisplay).openStream();
                 mIcon11 = BitmapFactory.decodeStream(in);
             } catch (Exception e) {
                 Log.e("Error", e.getMessage());

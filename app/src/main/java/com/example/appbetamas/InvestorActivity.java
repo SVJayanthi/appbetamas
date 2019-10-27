@@ -4,22 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import android.util.Log;
-import android.view.View;
-
-import androidx.annotation.NonNull;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -27,27 +19,29 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import androidx.drawerlayout.widget.DrawerLayout;
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.Menu;
+import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-
 import static android.content.ContentValues.TAG;
 
-public class MainActivity extends AppCompatActivity implements CreatorAdapter.ListItemClickListener {
-
+public class InvestorActivity extends AppCompatActivity implements InvestorAdapter.ListItemClickListener  {
     private AppBarConfiguration mAppBarConfiguration;
 
     //Google Firebase Database objects
@@ -66,15 +60,10 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_investor);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id)).requestEmail().requestScopes(new Scope("https://www.googleapis.com/auth/youtubepartner"), new Scope("https://www.googleapis.com/auth/yt-analytics-monetary.readonly"))
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -124,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                        Intent intent = new Intent(InvestorActivity.this, LoginActivity.class);
 
                         startActivity(intent);
                     }
@@ -198,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
     @Override
     public void onListItemClick(String clicked) {
 
-        Intent intent = new Intent(MainActivity.this, CreatorActivity.class);
+        Intent intent = new Intent(InvestorActivity.this, CreatorActivity.class);
         Creator create = null;
         for (Creator person : creators)
             if (person.getKey().equals(clicked))
@@ -220,17 +209,4 @@ public class MainActivity extends AppCompatActivity implements CreatorAdapter.Li
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-                || super.onSupportNavigateUp();
-    }
 }
