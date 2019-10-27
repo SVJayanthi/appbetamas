@@ -18,6 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -62,8 +63,12 @@ public class CreatorActivity extends AppCompatActivity {
     private Button sendC;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_creator);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+        
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -126,6 +131,7 @@ public class CreatorActivity extends AppCompatActivity {
 
 
                     int amount =  (int) ((valueD / 12)*(percent/100));
+                    Log.d("amount", ""+amount);
                     String description = "12 percent equity";
                     String result = "asdf";
                     try {
